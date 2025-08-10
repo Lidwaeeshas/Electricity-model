@@ -7,6 +7,7 @@ from statsmodels.stats.stattools import durbin_watson
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 import numpy as np
 import statsmodels.api as sm
+import joblib
 
 
 df = pd.read_csv("/content/electricity_cost_dataset.csv")
@@ -107,3 +108,4 @@ def evaluations(y_test,pred,x_test):
     f_pvalue = model_n.f_pvalue
     coef = model_n.pvalues
     return f"Our features have a significance of {adj_r2 * 100:.2f}\nOur prediction is off by {rmse :.2f} approximately\n and our mean absolute error is {mae}\nAnd for the significance of our features are {coef}"
+joblib.dump({"model":model})
