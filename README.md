@@ -1,6 +1,7 @@
 # Electricity-model
 Electricity Cost Prediction  This project builds a Linear Regression model to predict electricity costs based on several building and environmental features. It demonstrates practical data cleaning, feature engineering, outlier removal, model training, evaluation, and diagnostic checks to ensure model reliability.
-Project Overview
+
+#Project Overview
 
 The goal is to accurately estimate electricity costs using features like:
 
@@ -23,7 +24,7 @@ Resident count
 
 The project handles data preprocessing steps such as removing duplicates and outliers to improve model performance. It also checks for common linear regression assumptions including multicollinearity, linearity, independence of errors, and normality of residuals.
 
-Features & Techniques
+#Features & Techniques
 
 Data cleaning: duplicate removal, outlier detection with IQR
 
@@ -49,7 +50,7 @@ Model evaluation metrics: R², Adjusted R², MSE, RMSE, MAE, F-statistic
 Statistical significance testing for feature coefficients
 
 
-Usage
+#Usage
 
 1. Install required packages:
 
@@ -66,7 +67,7 @@ pip install pandas scikit-learn statsmodels matplotlib numpy
 
 
 
-Results Summary
+#Results Summary
 
 Model explains approximately {adjusted R² value here}% of the variance in electricity costs.
 
@@ -74,7 +75,7 @@ Prediction error (RMSE) is about {rmse} units.
 
 Feature significance and multicollinearity are evaluated to ensure reliable predictors.
 
-What I Learned
+#What I Learned
 
 Importance of preprocessing and outlier removal in regression models
 
