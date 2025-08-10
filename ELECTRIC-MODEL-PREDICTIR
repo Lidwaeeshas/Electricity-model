@@ -1,0 +1,109 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error,r2_score,mean_absolute_error
+import matplotlib.pyplot as plt
+from statsmodels.stats.stattools import durbin_watson
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+import numpy as np
+import statsmodels.api as sm
+
+
+df = pd.read_csv("/content/electricity_cost_dataset.csv")
+
+df = df.drop_duplicates()
+
+y = df[["electricity cost"]]
+
+y = pd.to_numeric(y["electricity cost"], errors = "coerce")
+
+# I did this bcs of one purpose to remove outliers
+# because it is always a good practice to remove outliers and
+# another reason is that LinearRegression is heavily affected by outliers
+
+q1 = y.quantile(0.25)
+
+q3 = y.quantile(0.75)
+
+iqr = q3 - q1
+
+
+lower_bound = q1 - 1.5 * iqr
+
+upper_bound = q3 + 1.5 * iqr
+
+filter = (y >= lower_bound) & (y <= upper_bound)
+
+y = y[filter]
+
+x = df[["site area", "structure type", "water consumption", "recycling rate", "utilisation rate", "air qality index", "issue reolution time", "resident count"]]
+
+x = pd.get_dummies(x,columns = ["structure type"]).astype("i")
+
+x = x[filter]
+
+x1,x2,y1,y2 = train_test_split(x,y,test_size = 0.3,random_state = 0)
+
+model = LinearRegression()
+
+model.fit(x1,y1)
+
+pred = model.predict(x2)
+
+
+def multicolinearity_check(df1):
+# I created this because I want to check for multicolinearity
+#dont get scared 😂 by the name it just means are 2 or more
+#features all about the same thing
+    def calculate_vif(df1):
+        vif = pd.DataFrame()
+        vif["features"] = df1.columns
+        vif["vif"] = [variance_inflation_factor(df1.values,i) for i in range(df1.shape[1])]
+        return vif
+    vif_check = calculate_vif(df1)
+    return vif_check
+
+def linearity_and_homoschedaschy_check(y_test,pred):
+# created this variable(error) also known as residual to check for linearity and homoschedasty
+    error = y_test - pred
+    plt.figure(figsize = (20,7))
+    plt.subplot(1,2,1)
+    #i plot this graph to check for linearity
+    #if the points are scattered around 0 then
+    #linearity is satisfies otherwise violated
+    plt.axhline(y = 0, color = 'r')
+    plt.scatter(pred, error)
+
+def independence_check(y_test,pred):
+    error = y_test - pred
+    # I created this variable to check for independence
+    #if it shows a score of approximately of 2 then it is satisfied
+    #Independence is when one output does not affect the other
+    independence = durbin_watson(error)
+    if 1.5 <= independence <= 2.5:
+        return f"independence is satisfied with and approximately of {independence:.2f}"
+
+def normality_check(y_test,pred):
+    error = y_test - pred
+    #i plot this to chek for distribution if it forms
+    #a bell shaped then that means that the errors are equally
+    #distributed that is we have much smaller errors ,then medium
+    #in size errors then large errors with small amounts
+    plt.subplot(1,2,2)
+    plt.hist(error, bins = 50)
+
+def evaluations(y_test,pred,x_test):
+    error = y_test - pred
+    r2_scored = r2_score(y_test,pred)
+    mse = mean_squared_error(y_test,pred)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_test,pred)
+    n = len(y_test)
+    p = x_test.shape[1]
+    adj_r2 = 1 - ((1-r2_scored) * (n - 1)/(n - p - 1))
+    x_n = sm.add_constant(x_test)
+    model_n = sm.OLS(y_test,x_n).fit()
+    f_stat = model_n.fvalue
+    f_pvalue = model_n.f_pvalue
+    coef = model_n.pvalues
+    return f"Our features have a significance of {adj_r2 * 100:.2f}\nOur prediction is off by {rmse :.2f} approximately\n and our mean absolute error is {mae}\nAnd for the significance of our features are {coef}"
